@@ -2400,18 +2400,18 @@
                     // 其他数据直接使用导入的数据（除非是模式2/3，且已有数据）
                     if (importMode === '1') {
                         // 直接覆盖模式
-                        if (data.skills) mergedSkills = data.skills;
-                        if (data.skillNotes) mergedSkillNotes = data.skillNotes;
-                        if (data.stages) mergedStages = data.stages;
-                        if (data.trainingTypes) mergedTypes = data.trainingTypes;
-                        if (data.problems) mergedProblems = data.problems;
+                        if (imported.data.skills) mergedSkills = imported.data.skills;
+                        if (imported.data.skillNotes) mergedSkillNotes = imported.data.skillNotes;
+                        if (imported.data.stages) mergedStages = imported.data.stages;
+                        if (imported.data.trainingTypes) mergedTypes = imported.data.trainingTypes;
+                        if (imported.data.problems) mergedProblems = imported.data.problems;
                     } else {
                         // 合并/仅新增模式
-                        mergedSkills = data.skills || localStorage.getItem('tennisSkills');
-                        mergedSkillNotes = data.skillNotes || localStorage.getItem('tennisSkillNotes');
-                        mergedStages = data.stages || localStorage.getItem('tennisStages');
-                        mergedTypes = data.trainingTypes || localStorage.getItem('tennisTrainingTypes');
-                        mergedProblems = data.problems || localStorage.getItem('tennisProblems');
+                        mergedSkills = imported.data.skills || localStorage.getItem('tennisSkills');
+                        mergedSkillNotes = imported.data.skillNotes || localStorage.getItem('tennisSkillNotes');
+                        mergedStages = imported.data.stages || localStorage.getItem('tennisStages');
+                        mergedTypes = imported.data.trainingTypes || localStorage.getItem('tennisTrainingTypes');
+                        mergedProblems = imported.data.problems || localStorage.getItem('tennisProblems');
                     }
 
                     // 保存合并后的数据
@@ -2425,7 +2425,7 @@
                     // 显示导入结果
                     if (importMode !== '2' || conflicts.length === 0) {
                         const addedCount = mergedLogs.length - (importMode === '1' ? 
-                            (data.trainingLogs ? JSON.parse(data.trainingLogs).length : 0) : 
+                            (imported.data.trainingLogs ? JSON.parse(imported.data.trainingLogs).length : 0) : 
                             JSON.parse(localStorage.getItem('tennisTrainingLogs') || '[]').length);
 
                         alert(`数据导入完成！\n\n导入模式：${importMode === '1' ? '直接覆盖' : importMode === '2' ? '智能合并' : '仅新增'}\n当前训练记录：${mergedLogs.length} 条\n\n页面将刷新以应用更改。`);
