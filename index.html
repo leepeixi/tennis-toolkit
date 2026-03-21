@@ -2428,12 +2428,23 @@
                     if (mergedProblems !== null) localStorage.setItem('tennisProblems', mergedProblems);
 
                     // 显示导入结果
-                    if (importMode !== '2' || conflicts.length === 0) {
-                        const addedCount = mergedLogs.length - (importMode === '1' ? 
-                            (imported.data.trainingLogs ? JSON.parse(imported.data.trainingLogs).length : 0) : 
+                    if (importMode === '2') {
+                        // 智能合并模式，显示冲突统计
+                        if (autoSkipped > 0 || conflicts.length > 0) {
+                            const summary = `导入完成：\n\n` +
+                                `✅ 新增记录：${mergedLogs.length - currentLogs.length} 条\n` +
+                                `⏭️ 跳过重复：${autoSkipped} 条\n` +
+                                `⚠️ 处理冲突：${conflicts.length} 条\n\n` +
+                                `当前训练记录总数：${mergedLogs.length} 条`;
+                            alert(summary);
+                        }
+                    } else {
+                        // 其他导入模式
+                        const addedCount = mergedLogs.length - (importMode === '1' ?
+                            (imported.data.trainingLogs ? JSON.parse(imported.data.trainingLogs).length : 0) :
                             JSON.parse(localStorage.getItem('tennisTrainingLogs') || '[]').length);
 
-                        alert(`数据导入完成！\n\n导入模式：${importMode === '1' ? '直接覆盖' : importMode === '2' ? '智能合并' : '仅新增'}\n当前训练记录：${mergedLogs.length} 条\n\n页面将刷新以应用更改。`);
+                        alert(`数据导入完成！\n\n导入模式：${importMode === '1' ? '直接覆盖' : '仅新增'}\n当前训练记录：${mergedLogs.length} 条\n\n页面将刷新以应用更改。`);
                     }
 
                     location.reload();
