@@ -1719,10 +1719,12 @@
             alert('训练记录已保存！');
         }
 
-        // 获取训练日志
+        // 获取训练日志（按训练日期倒序排序）
         function getTrainingLogs() {
             const logs = localStorage.getItem('tennisTrainingLogs');
-            return logs ? JSON.parse(logs) : [];
+            const logsArray = logs ? JSON.parse(logs) : [];
+            // 按训练日期倒序排序（最新的日期在前）
+            return logsArray.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
             // 显示训练日志
