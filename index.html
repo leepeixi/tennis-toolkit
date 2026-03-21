@@ -1893,7 +1893,7 @@
 
             // 激活选中的标签和内容
             document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+            event.currentTarget.classList.add('active');
 
             // 如果切换到进度标签，更新进度
             if (tabId === 'progress') {
