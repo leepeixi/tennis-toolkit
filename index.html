@@ -2587,10 +2587,10 @@
             document.getElementById('importModeModal').style.display = 'flex';
         }
 
-        function selectImportMode(mode) {
+        async function selectImportMode(mode) {
             document.getElementById('importModeModal').style.display = 'none';
             if (mode && pendingImportData) {
-                processImportWithMode(pendingImportData, mode);
+                await processImportWithMode(pendingImportData, mode);
             }
             pendingImportData = null;
         }
@@ -2719,7 +2719,7 @@
             event.target.value = '';
         }
 
-        function processImportWithMode(imported, importMode) {
+        async function processImportWithMode(imported, importMode) {
             let mergedLogs = [];
             let mergedSkills = null;
             let mergedSkillNotes = null;
