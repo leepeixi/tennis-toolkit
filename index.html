@@ -2355,16 +2355,21 @@
                                             ballCount: (imported.ballCount || 0) || (existing.ballCount || 0),
                                             notes: existing.notes || imported.notes
                                         };
-                                        // 如果两边都有文字，用导入的为主
+                                        // 如果两边都有文字，提示合并
                                         if (existing.notes && imported.notes && existing.notes !== imported.notes) {
                                             const mergeNotes = prompt(
                                                 `两边都有心得体会，请选择：\n\n` +
-                                                `1 - 保留：${existing.notes}\n` +
-                                                `2 - 使用：${imported.notes}\n\n` +
-                                                `输入 1 或 2：`
+                                                `【当前】\n${existing.notes}\n\n` +
+                                                `【导入】\n${imported.notes}\n\n` +
+                                                `1 - 保留当前\n` +
+                                                `2 - 使用导入\n` +
+                                                `3 - 两者都保留（用分隔符连接）\n\n` +
+                                                `输入 1、2 或 3：`
                                             );
                                             if (mergeNotes === '2') {
                                                 mergedLog.notes = imported.notes;
+                                            } else if (mergeNotes === '3') {
+                                                mergedLog.notes = existing.notes + '\n---\n' + imported.notes;
                                             }
                                         }
                                         mergedLogs[index] = mergedLog;
