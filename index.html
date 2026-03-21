@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎾 网球入门工具箱</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -259,6 +263,31 @@
         .form-textarea {
             resize: vertical;
             min-height: 100px;
+        }
+
+        .auth-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .auth-status.info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        .auth-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .auth-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
         .btn {
@@ -1030,6 +1059,68 @@
             <!-- 备份与恢复 -->
             <div id="backup" class="tab-content">
                 <div class="section">
+                    <h2 class="section-title">☁️ 云端同步</h2>
+                    <p style="margin-bottom: 20px; color: #666;">登录后，数据会自动在所有设备间同步</p>
+
+                    <!-- 未登录状态 -->
+                    <div id="loginSection">
+                        <div class="progress-section">
+                            <div class="progress-title">📧 登录账号</div>
+                            <p style="margin-bottom: 15px; color: #666; font-size: 0.95em;">
+                                登录以启用云端自动同步功能
+                            </p>
+                            <div id="loginStatus" class="auth-status"></div>
+                            <form onsubmit="handleLogin(event)" style="margin-bottom: 20px;">
+                                <div style="margin-bottom: 10px;">
+                                    <input type="email" id="loginEmail" placeholder="邮箱地址" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em;">
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <input type="password" id="loginPassword" placeholder="密码" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em;">
+                                </div>
+                                <button type="submit" class="btn">🔐 登录</button>
+                            </form>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="progress-title">📝 注册新账号</div>
+                            <p style="margin-bottom: 15px; color: #666; font-size: 0.95em;">
+                                没有账号？快速注册一个
+                            </p>
+                            <div id="registerStatus" class="auth-status"></div>
+                            <form onsubmit="handleRegister(event)">
+                                <div style="margin-bottom: 10px;">
+                                    <input type="email" id="registerEmail" placeholder="邮箱地址" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em;">
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <input type="password" id="registerPassword" placeholder="密码（至少6位）" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em;">
+                                </div>
+                                <button type="submit" class="btn" style="background: #28a745;">📝 注册</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 已登录状态 -->
+                    <div id="loggedInSection" style="display: none;">
+                        <div class="progress-section" style="background: #d4edda; border-left: 4px solid #28a745;">
+                            <div class="progress-title">✅ 已登录</div>
+                            <p style="margin-bottom: 10px; color: #155724; font-size: 1.1em;">
+                                <strong>账号：</strong><span id="userEmail"></span>
+                            </p>
+                            <p style="margin-bottom: 15px; color: #155724; font-size: 0.95em;">
+                                云端同步：<strong>已启用</strong><br>
+                                离线缓存：<strong>已启用</strong>
+                            </p>
+                            <button class="btn" style="background: #dc3545;" onclick="handleLogout()">🚪 登出</button>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="progress-title">📤 同步状态</div>
+                            <div id="syncStatus" style="margin-bottom: 10px; font-size: 0.95em; color: #666;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
                     <h2 class="section-title">💾 数据备份与恢复</h2>
                     <p style="margin-bottom: 20px; color: #666;">导出你的学习记录、训练日志等数据，或从备份文件恢复数据</p>
 
@@ -1070,147 +1161,227 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        // Supabase 配置
-        const SUPABASE_URL = 'https://hcnirywsejotqsfxautm.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable__k16vCCHOcrkeBferwlnGA_hG4r8XMp';
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBbYl9VddP4kJAwaK_G0VrcIEOCbeNnQE",
+            authDomain: "tennis-training-toolkit.firebaseapp.com",
+            projectId: "tennis-training-toolkit",
+            storageBucket: "tennis-training-toolkit.firebasestorage.app",
+            messagingSenderId: "937101105213",
+            appId: "1:937101105213:web:476a366de37ee2d97db254"
+        };
 
-        // 引入 Supabase 客户端
-        let supabaseClient = null;
+        // 初始化 Firebase
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let cloudListener = null;
 
-        // 用户标识（本地存储的匿名 token）
-        let userId = null;
+        function initFirebase() {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
 
-        // 初始化 Supabase
-        function initSupabase() {
-            // 创建 Supabase 客户端（使用 CDN）
-            const { createClient } = window.supabase;
-            supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+            // 启用离线持久化
+            db.enablePersistence()
+                .catch((err) => {
+                    console.log('离线持久化状态:', err.code);
+                });
+
+            // 监听登录状态
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    console.log('用户已登录:', user.email);
+                    updateAuthUI();
+                    enableCloudSync();
+                } else {
+                    currentUser = null;
+                    console.log('用户未登录');
+                    updateAuthUI();
+                    if (cloudListener) {
+                        cloudListener(); // 取消监听
+                        cloudListener = null;
+                    }
+                }
+            });
         }
 
-        // 获取或生成用户标识
-        function initUserId() {
-            userId = localStorage.getItem('tennisUserId');
-            if (!userId) {
-                // 生成新的用户标识
-                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('tennisUserId', userId);
-                console.log('已生成新的用户标识:', userId);
-            } else {
-                console.log('使用现有用户标识:', userId);
+        // Firebase 登录
+        async function loginUser(email, password) {
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                console.log('登录成功:', userCredential.user.email);
+                return { success: true, user: userCredential.user };
+            } catch (error) {
+                console.error('登录失败:', error);
+                let errorMessage = '登录失败';
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = '用户不存在，请先注册';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = '密码错误';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = '邮箱格式错误';
+                }
+                return { success: false, error: errorMessage };
             }
+        }
 
-            // 从云端加载数据
-            loadDataFromCloud();
+        // Firebase 注册
+        async function registerUser(email, password) {
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                console.log('注册成功:', userCredential.user.email);
+                return { success: true, user: userCredential.user };
+            } catch (error) {
+                console.error('注册失败:', error);
+                let errorMessage = '注册失败';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = '该邮箱已被注册';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = '密码太弱，至少6位';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = '邮箱格式错误';
+                }
+                return { success: false, error: errorMessage };
+            }
+        }
+
+        // 登出
+        async function logoutUser() {
+            try {
+                await auth.signOut();
+                console.log('已登出');
+                return { success: true };
+            } catch (error) {
+                console.error('登出失败:', error);
+                return { success: false, error: '登出失败' };
+            }
         }
 
         // 保存数据到云端
         async function saveDataToCloud() {
+            if (!currentUser) {
+                console.log('未登录，跳过云端保存');
+                return false;
+            }
+
             try {
                 const cloudData = {
-                    user_id: userId,
-                    data: {
-                        skills: localStorage.getItem('tennisSkills'),
-                        skillNotes: localStorage.getItem('tennisSkillNotes'),
-                        stages: localStorage.getItem('tennisStages'),
-                        trainingLogs: localStorage.getItem('tennisTrainingLogs'),
-                        trainingTypes: localStorage.getItem('tennisTrainingTypes'),
-                        problems: localStorage.getItem('tennisProblems')
-                    }
+                    skills: localStorage.getItem('tennisSkills'),
+                    skillNotes: localStorage.getItem('tennisSkillNotes'),
+                    stages: localStorage.getItem('tennisStages'),
+                    trainingLogs: localStorage.getItem('tennisTrainingLogs'),
+                    trainingTypes: localStorage.getItem('tennisTrainingTypes'),
+                    problems: localStorage.getItem('tennisProblems'),
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
-                const { error } = await supabaseClient
-                    .from('user_data')
-                    .upsert(cloudData, { onConflict: 'user_id' });
-
-                if (error) {
-                    console.error('云端保存失败:', error);
-                    showSyncStatus('保存失败', 'error');
-                    return false;
-                }
-
-                showSyncStatus('已同步到云端', 'success');
+                await db.collection('users').doc(currentUser.uid).set(cloudData, { merge: true });
+                console.log('数据已保存到云端');
                 return true;
-            } catch (e) {
-                console.error('云端保存异常:', e);
-                showSyncStatus('同步失败', 'error');
+            } catch (error) {
+                console.error('云端保存失败:', error);
                 return false;
             }
         }
 
         // 从云端加载数据
         async function loadDataFromCloud() {
-            try {
-                // 如果已经恢复过云端数据,就直接静默加载
-                const hasRestored = localStorage.getItem('hasRestoredCloudData') === 'true';
+            if (!currentUser) {
+                console.log('未登录，跳过云端加载');
+                return false;
+            }
 
+            try {
+                const hasRestored = localStorage.getItem('hasRestoredCloudData') === 'true';
                 showSyncStatus('从云端加载...', 'loading');
 
-                const { data, error } = await supabaseClient
-                    .from('user_data')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .single();
+                const doc = await db.collection('users').doc(currentUser.uid).get();
 
-                if (error) {
-                    if (error.code === 'PGRST116') {
-                        // 没有找到数据，这是新用户，正常情况
-                        console.log('云端无数据，使用本地数据');
-                        showSyncStatus('无云端数据', 'info');
-                    } else {
-                        console.error('云端加载失败:', error);
-                        showSyncStatus('加载失败', 'error');
-                    }
+                if (!doc.exists) {
+                    console.log('云端无数据，使用本地数据');
+                    showSyncStatus('无云端数据', 'info');
                     return false;
                 }
 
-                if (data) {
-                    // 如果已经恢复过,静默加载
-                    if (hasRestored) {
-                        const storedData = data.data || data;
-                        if (storedData.skills) localStorage.setItem('tennisSkills', storedData.skills);
-                        if (storedData.skillNotes) localStorage.setItem('tennisSkillNotes', storedData.skillNotes);
-                        if (storedData.stages) localStorage.setItem('tennisStages', storedData.stages);
-                        if (storedData.trainingLogs) localStorage.setItem('tennisTrainingLogs', storedData.trainingLogs);
-                        if (storedData.trainingTypes) localStorage.setItem('tennisTrainingTypes', storedData.trainingTypes);
-                        if (storedData.problems) localStorage.setItem('tennisProblems', storedData.problems);
-                        showSyncStatus('已同步云端数据', 'success');
-                        return true;
-                    }
+                const cloudData = doc.data();
 
-                    // 询问用户是否恢复云端数据
-                    const storedData = data.data || data;
-                    const cloudTime = new Date().toLocaleString('zh-CN');
-                    const confirmMsg = `发现云端数据（最后更新: ${cloudTime}）\n\n是否恢复云端数据？\n\n点击"确定"恢复云端数据\n点击"取消"使用本地数据`;
+                // 如果已经恢复过，静默加载
+                if (hasRestored) {
+                    if (cloudData.skills) localStorage.setItem('tennisSkills', cloudData.skills);
+                    if (cloudData.skillNotes) localStorage.setItem('tennisSkillNotes', cloudData.skillNotes);
+                    if (cloudData.stages) localStorage.setItem('tennisStages', cloudData.stages);
+                    if (cloudData.trainingLogs) localStorage.setItem('tennisTrainingLogs', cloudData.trainingLogs);
+                    if (cloudData.trainingTypes) localStorage.setItem('tennisTrainingTypes', cloudData.trainingTypes);
+                    if (cloudData.problems) localStorage.setItem('tennisProblems', cloudData.problems);
+                    console.log('云端数据已静默加载');
+                    showSyncStatus('已同步', 'success');
+                } else {
+                    // 首次恢复，询问用户
+                    const confirmed = confirm(
+                        '发现云端数据，是否恢复？\n\n' +
+                        '点击"确定"：云端数据覆盖本地\n' +
+                        '点击"取消"：保留本地数据'
+                    );
 
-                    // 如果云端数据较新，自动恢复
-                    const hasLocalData = localStorage.getItem('tennisSkills') || localStorage.getItem('tennisTrainingLogs');
-
-                    if (hasLocalData) {
-                        // 询问用户
-                        if (confirm(confirmMsg)) {
-                            restoreCloudData(data);
-                            showSyncStatus('已恢复云端数据', 'success');
-                        } else {
-                            showSyncStatus('使用本地数据', 'info');
-                        }
-                    } else {
-                        // 无本地数据，直接恢复
-                        restoreCloudData(data);
+                    if (confirmed) {
+                        restoreCloudData(cloudData);
+                        localStorage.setItem('hasRestoredCloudData', 'true');
                         showSyncStatus('已恢复云端数据', 'success');
+                    } else {
+                        localStorage.setItem('hasRestoredCloudData', 'true');
+                        showSyncStatus('已保留本地数据', 'info');
                     }
                 }
 
                 return true;
-            } catch (e) {
-                console.error('云端加载异常:', e);
+            } catch (error) {
+                console.error('云端加载失败:', error);
                 showSyncStatus('加载失败', 'error');
                 return false;
             }
         }
 
+        // 启用云端实时同步
+        function enableCloudSync() {
+            if (!currentUser) return;
+
+            // 监听云端数据变化
+            cloudListener = db.collection('users').doc(currentUser.uid)
+                .onSnapshot((doc) => {
+                    if (doc.exists && currentUser) {
+                        const cloudData = doc.data();
+                        const hasRestored = localStorage.getItem('hasRestoredCloudData') === 'true';
+
+                        if (hasRestored) {
+                            // 静默同步
+                            if (cloudData.skills) localStorage.setItem('tennisSkills', cloudData.skills);
+                            if (cloudData.skillNotes) localStorage.setItem('tennisSkillNotes', cloudData.skillNotes);
+                            if (cloudData.stages) localStorage.setItem('tennisStages', cloudData.stages);
+                            if (cloudData.trainingLogs) localStorage.setItem('tennisTrainingLogs', cloudData.trainingLogs);
+                            if (cloudData.trainingTypes) localStorage.setItem('tennisTrainingTypes', cloudData.trainingTypes);
+                            if (cloudData.problems) localStorage.setItem('tennisProblems', cloudData.problems);
+                            console.log('云端数据已实时同步');
+                            refreshAllViews();
+                        }
+                    }
+                });
+
+            console.log('云端实时同步已启用');
+        }
+
         // 恢复云端数据
+        function refreshAllViews() {
+            loadSkills();
+            loadTrainingTypes();
+            displayTrainingLogs();
+            displayProblems();
+            updateProgress();
+        }
+
         function restoreCloudData(data) {
             // data 现在在 data.data 中
             const storedData = data.data || data;
@@ -1232,6 +1403,101 @@
         }
 
         // 显示同步状态
+        // 更新登录UI
+        function updateAuthUI() {
+            const loginSection = document.getElementById('loginSection');
+            const loggedInSection = document.getElementById('loggedInSection');
+            const userEmail = document.getElementById('userEmail');
+
+            if (currentUser) {
+                loginSection.style.display = 'none';
+                loggedInSection.style.display = 'block';
+                userEmail.textContent = currentUser.email;
+            } else {
+                loginSection.style.display = 'block';
+                loggedInSection.style.display = 'none';
+            }
+        }
+
+        // 登录表单提交
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const statusDiv = document.getElementById('loginStatus');
+
+            if (!email || !password) {
+                statusDiv.textContent = '请填写邮箱和密码';
+                statusDiv.className = 'auth-status error';
+                return;
+            }
+
+            statusDiv.textContent = '登录中...';
+            statusDiv.className = 'auth-status info';
+
+            const result = await loginUser(email, password);
+
+            if (result.success) {
+                statusDiv.textContent = '登录成功！';
+                statusDiv.className = 'auth-status success';
+                setTimeout(() => {
+                    statusDiv.textContent = '';
+                    statusDiv.className = 'auth-status';
+                }, 2000);
+            } else {
+                statusDiv.textContent = result.error;
+                statusDiv.className = 'auth-status error';
+            }
+        }
+
+        // 注册表单提交
+        async function handleRegister(event) {
+            event.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const statusDiv = document.getElementById('registerStatus');
+
+            if (!email || !password) {
+                statusDiv.textContent = '请填写邮箱和密码';
+                statusDiv.className = 'auth-status error';
+                return;
+            }
+
+            if (password.length < 6) {
+                statusDiv.textContent = '密码至少6位';
+                statusDiv.className = 'auth-status error';
+                return;
+            }
+
+            statusDiv.textContent = '注册中...';
+            statusDiv.className = 'auth-status info';
+
+            const result = await registerUser(email, password);
+
+            if (result.success) {
+                statusDiv.textContent = '注册成功！';
+                statusDiv.className = 'auth-status success';
+                setTimeout(() => {
+                    statusDiv.textContent = '';
+                    statusDiv.className = 'auth-status';
+                }, 2000);
+            } else {
+                statusDiv.textContent = result.error;
+                statusDiv.className = 'auth-status error';
+            }
+        }
+
+        // 登出按钮点击
+        async function handleLogout() {
+            const confirmed = confirm('确定要登出吗？');
+            if (confirmed) {
+                const result = await logoutUser();
+                if (result.success) {
+                    alert('已登出');
+                }
+            }
+        }
+
         function showSyncStatus(message, type) {
             // 移除旧的提示
             const oldStatus = document.getElementById('syncStatus');
@@ -1323,8 +1589,8 @@
             // 导入旧数据
             importOldData();
 
-            // 初始化 Supabase
-            initSupabase();
+            // 初始化 Firebase
+            initFirebase();
 
             // 获取或生成用户标识
             initUserId();
@@ -1486,6 +1752,9 @@
 
             displayTypeList();
             loadTrainingTypes();
+
+            // 同步到云端
+            saveDataToCloud();
 
             // 同步到云端
             saveDataToCloud();
