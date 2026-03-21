@@ -1161,6 +1161,98 @@
         </div>
     </div>
 
+    <!-- 导入模式选择模态弹窗 -->
+    <div id="importModeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 15px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h3 style="color: #667eea; margin-bottom: 20px; font-size: 1.3em;">📥 选择导入模式</h3>
+            <div style="margin-bottom: 20px;">
+                <div class="import-option" onclick="selectImportMode(1)" style="background: #fff3f3; border: 2px solid #ffcdd9; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s;">
+                    <div style="font-weight: bold; color: #dc3545; margin-bottom: 5px;">🔄 直接覆盖</div>
+                    <div style="color: #666; font-size: 0.9em;">用备份文件完全替换当前数据</div>
+                </div>
+                <div class="import-option" onclick="selectImportMode(2)" style="background: #fff8e1; border: 2px solid #ffe0b2; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s;">
+                    <div style="font-weight: bold; color: #f57c00; margin-bottom: 5px;">⚡ 智能合并</div>
+                    <div style="color: #666; font-size: 0.9em;">自动合并，遇到重复记录时可选择保留哪方</div>
+                </div>
+                <div class="import-option" onclick="selectImportMode(3)" style="background: #e8f5e9; border: 2px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s;">
+                    <div style="font-weight: bold; color: #388e3c; margin-bottom: 5px;">➕ 仅新增</div>
+                    <div style="color: #666; font-size: 0.9em;">只导入不存在的记录，不修改现有数据</div>
+                </div>
+            </div>
+            <button onclick="closeImportModeModal()" style="width: 100%; padding: 12px; background: #999; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">取消</button>
+        </div>
+    </div>
+
+    <!-- 冲突解决模态弹窗 -->
+    <div id="conflictModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10001; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 15px; padding: 30px; max-width: 550px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h3 id="conflictModalTitle" style="color: #f57c00; margin-bottom: 15px; font-size: 1.2em;">⚠️ 发现重复记录</h3>
+            <div id="conflictModalContent"></div>
+            <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                <div style="margin-bottom: 10px;">
+                    <div class="conflict-option" onclick="resolveConflict(1)" style="background: #e3f2fd; border: 2px solid #90caf9; border-radius: 10px; padding: 15px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s;">
+                        <div style="font-weight: bold; color: #1976d2;">📌 保留当前记录</div>
+                    </div>
+                    <div class="conflict-option" onclick="resolveConflict(2)" style="background: #fff3e0; border: 2px solid #ffcc80; border-radius: 10px; padding: 15px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s;">
+                        <div style="font-weight: bold; color: #e65100;">🔄 使用导入记录</div>
+                    </div>
+                    <div class="conflict-option" onclick="resolveConflict(3)" style="background: #f3e5f5; border: 2px solid #ce93d8; border-radius: 10px; padding: 15px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s;">
+                        <div style="font-weight: bold; color: #7b1fa2;">🔀 合并（保留非空值）</div>
+                    </div>
+                    <div class="conflict-option" onclick="resolveConflict(4)" style="background: #eceff1; border: 2px solid #b0bec5; border-radius: 10px; padding: 15px; cursor: pointer; transition: all 0.3s;">
+                        <div style="font-weight: bold; color: #546e7a;">⏭️ 跳过该记录</div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="resolveConflict(0)" style="width: 100%; padding: 12px; background: #999; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; margin-top: 10px;">取消导入</button>
+        </div>
+    </div>
+
+    <!-- 心得合并模态弹窗 -->
+    <div id="notesMergeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10002; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 15px; padding: 30px; max-width: 550px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h3 style="color: #7b1fa2; margin-bottom: 15px; font-size: 1.2em;">📝 两边都有心得体会</h3>
+            <div style="margin-bottom: 20px;">
+                <div style="background: #e3f2fd; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                    <div style="font-weight: bold; color: #1976d2; margin-bottom: 5px;">当前记录</div>
+                    <div id="notesMergeCurrent" style="color: #333; white-space: pre-wrap;"></div>
+                </div>
+                <div style="background: #fff3e0; border-radius: 8px; padding: 15px;">
+                    <div style="font-weight: bold; color: #e65100; margin-bottom: 5px;">导入记录</div>
+                    <div id="notesMergeImport" style="color: #333; white-space: pre-wrap;"></div>
+                </div>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <div class="merge-option" onclick="resolveNotesMerge(1)" style="background: #e3f2fd; border: 2px solid #90caf9; border-radius: 10px; padding: 15px; margin-bottom: 8px; cursor: pointer;">
+                    <div style="font-weight: bold; color: #1976d2;">📌 保留当前心得</div>
+                </div>
+                <div class="merge-option" onclick="resolveNotesMerge(2)" style="background: #fff3e0; border: 2px solid #ffcc80; border-radius: 10px; padding: 15px; margin-bottom: 8px; cursor: pointer;">
+                    <div style="font-weight: bold; color: #e65100;">🔄 使用导入心得</div>
+                </div>
+                <div class="merge-option" onclick="resolveNotesMerge(3)" style="background: #f3e5f5; border: 2px solid #ce93d8; border-radius: 10px; padding: 15px; cursor: pointer;">
+                    <div style="font-weight: bold; color: #7b1fa2;">🔀 两者都保留</div>
+                </div>
+            </div>
+            <button onclick="resolveNotesMerge(0)" style="width: 100%; padding: 12px; background: #999; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; margin-top: 10px;">取消</button>
+        </div>
+    </div>
+
+    <!-- 导入结果提示 -->
+    <div id="importResultModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10003; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 15px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+            <div id="importResultIcon" style="font-size: 3em; margin-bottom: 15px;"></div>
+            <h3 id="importResultTitle" style="color: #333; margin-bottom: 15px;"></h3>
+            <div id="importResultContent" style="color: #666; margin-bottom: 20px; text-align: left;"></div>
+            <button onclick="closeImportResultModal()" style="padding: 12px 40px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">确定</button>
+        </div>
+    </div>
+
+    <style>
+        .import-option:hover, .conflict-option:hover, .merge-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
 
     <script>
         // Firebase 配置
@@ -2484,7 +2576,117 @@
             alert('数据已成功导出！\n请妥善保存备份文件。');
         }
 
-        // 处理导入（智能合并模式，支持字段级合并）
+        // ==================== 模态弹窗控制函数 ====================
+        let pendingImportData = null;
+        let conflictResolveCallback = null;
+        let notesMergeResolveCallback = null;
+
+        // 显示导入模式选择
+        function showImportModeModal(data) {
+            pendingImportData = data;
+            document.getElementById('importModeModal').style.display = 'flex';
+        }
+
+        function selectImportMode(mode) {
+            document.getElementById('importModeModal').style.display = 'none';
+            if (mode && pendingImportData) {
+                processImportWithMode(pendingImportData, mode);
+            }
+            pendingImportData = null;
+        }
+
+        function closeImportModeModal() {
+            document.getElementById('importModeModal').style.display = 'none';
+            pendingImportData = null;
+        }
+
+        // 显示冲突解决
+        function showConflictModal(existing, imported, index, total, callback) {
+            conflictResolveCallback = callback;
+            
+            const durationConflict = existing.duration !== imported.duration;
+            const ballCountConflict = (existing.ballCount || 0) !== (imported.ballCount || 0);
+            const notesConflict = existing.notes !== imported.notes;
+
+            let content = `<div style="margin-bottom: 15px;">
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                    <strong>记录 ${index + 1}/${total}</strong>
+                </div>
+                <div style="color: #666; margin-bottom: 10px;">
+                    <div style="margin-bottom: 5px;">📅 日期：<strong>${imported.date}</strong></div>
+                    <div>🏷️ 类型：<strong>${imported.type}</strong></div>
+                </div>
+            </div>`;
+
+            if (durationConflict) {
+                content += `<div style="background: #fff3f3; border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+                    <div style="color: #dc3545; font-weight: bold;">⏱️ 训练时长不同</div>
+                    <div style="color: #666;">当前：<strong>${existing.duration}</strong> 分钟 → 导入：<strong>${imported.duration}</strong> 分钟</div>
+                </div>`;
+            }
+
+            if (ballCountConflict) {
+                content += `<div style="background: #fff3f3; border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+                    <div style="color: #dc3545; font-weight: bold;">🎾 练习球数不同</div>
+                    <div style="color: #666;">当前：<strong>${existing.ballCount || 0}</strong> 个 → 导入：<strong>${imported.ballCount || 0}</strong> 个</div>
+                </div>`;
+            }
+
+            if (notesConflict) {
+                content += `<div style="background: #fff3f3; border-radius: 8px; padding: 10px;">
+                    <div style="color: #dc3545; font-weight: bold;">📝 心得体会不同</div>
+                    <div style="color: #666;">两边内容不一致，需要选择</div>
+                </div>`;
+            }
+
+            document.getElementById('conflictModalTitle').textContent = `⚠️ 发现重复记录 (${index + 1}/${total})`;
+            document.getElementById('conflictModalContent').innerHTML = content;
+            document.getElementById('conflictModal').style.display = 'flex';
+        }
+
+        function resolveConflict(choice) {
+            document.getElementById('conflictModal').style.display = 'none';
+            if (conflictResolveCallback) {
+                conflictResolveCallback(choice);
+                conflictResolveCallback = null;
+            }
+        }
+
+        // 显示心得合并
+        function showNotesMergeModal(existingNotes, importedNotes, callback) {
+            notesMergeResolveCallback = callback;
+            document.getElementById('notesMergeCurrent').textContent = existingNotes;
+            document.getElementById('notesMergeImport').textContent = importedNotes;
+            document.getElementById('notesMergeModal').style.display = 'flex';
+        }
+
+        function resolveNotesMerge(choice) {
+            document.getElementById('notesMergeModal').style.display = 'none';
+            if (notesMergeResolveCallback) {
+                notesMergeResolveCallback(choice);
+                notesMergeResolveCallback = null;
+            }
+        }
+
+        // 显示导入结果
+        let importResultCallback = null;
+        function showImportResultModal(success, title, content, callback) {
+            importResultCallback = callback;
+            document.getElementById('importResultIcon').textContent = success ? '✅' : '❌';
+            document.getElementById('importResultTitle').textContent = title;
+            document.getElementById('importResultContent').innerHTML = content;
+            document.getElementById('importResultModal').style.display = 'flex';
+        }
+
+        function closeImportResultModal() {
+            document.getElementById('importResultModal').style.display = 'none';
+            if (importResultCallback) {
+                importResultCallback();
+                importResultCallback = null;
+            }
+        }
+
+        // ==================== 处理导入（异步版本） ====================
         function handleImport(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -2504,219 +2706,8 @@
                         return;
                     }
 
-                    const importMode = prompt(
-                        '请选择导入模式：\n\n' +
-                        '1 - 直接覆盖（覆盖当前所有数据）\n' +
-                        '2 - 智能合并（字段级合并，遇到差异时询问）\n' +
-                        '3 - 仅新增（只导入不存在的记录）\n\n' +
-                        '请输入 1、2 或 3：'
-                    );
-
-                    if (!importMode || !['1', '2', '3'].includes(importMode)) {
-                        alert('已取消导入');
-                        return;
-                    }
-
-                    let mergedLogs = [];
-                    let mergedSkills = null;
-                    let mergedSkillNotes = null;
-                    let mergedStages = null;
-                    let mergedTypes = null;
-                    let mergedProblems = null;
-
-                    // 训练日志合并
-                    if (imported.data.trainingLogs) {
-                        const currentLogs = JSON.parse(localStorage.getItem('tennisTrainingLogs') || '[]');
-                        const importedLogs = JSON.parse(imported.data.trainingLogs || '[]');
-
-                        if (importMode === '1') {
-                            // 直接覆盖
-                            mergedLogs = importedLogs;
-                        } else if (importMode === '2') {
-                            // 智能合并：字段级合并
-                            mergedLogs = [...currentLogs];
-                            let conflicts = [];
-                            let autoSkipped = 0;
-
-                            importedLogs.forEach(impLog => {
-                                const existingIndex = currentLogs.findIndex(curLog => 
-                                    curLog.date === impLog.date && curLog.type === impLog.type
-                                );
-
-                                if (existingIndex !== -1) {
-                                    const curLog = currentLogs[existingIndex];
-                                    
-                                    // 检查是否完全相同
-                                    const isIdentical = 
-                                        curLog.duration === impLog.duration &&
-                                        curLog.ballCount === (impLog.ballCount || 0) &&
-                                        curLog.notes === (impLog.notes || '');
-
-                                    if (isIdentical) {
-                                        // 完全相同，自动跳过
-                                        autoSkipped++;
-                                    } else {
-                                        // 有差异，记录冲突
-                                        conflicts.push({
-                                            existing: curLog,
-                                            imported: impLog,
-                                            index: existingIndex
-                                        });
-                                    }
-                                } else {
-                                    // 新记录，直接添加
-                                    mergedLogs.push(impLog);
-                                }
-                            });
-
-                            // 处理冲突
-                            if (conflicts.length > 0) {
-                                for (let i = 0; i < conflicts.length; i++) {
-                                    const { existing, imported, index } = conflicts[i];
-                                    
-                                    let conflictMsg = `记录 ${i + 1}/${conflicts.length}：\n`;
-                                    conflictMsg += `日期：${imported.date}\n`;
-                                    conflictMsg += `类型：${imported.type}\n\n`;
-                                    
-                                    // 比较各个字段
-                                    let durationConflict = existing.duration !== imported.duration;
-                                    let ballCountConflict = (existing.ballCount || 0) !== (imported.ballCount || 0);
-                                    let notesConflict = existing.notes !== imported.notes;
-
-                                    if (durationConflict) {
-                                        conflictMsg += `⏱️ 训练时长：\n`;
-                                        conflictMsg += `  当前：${existing.duration} 分钟\n`;
-                                        conflictMsg += `  导入：${imported.duration} 分钟\n\n`;
-                                    }
-
-                                    if (ballCountConflict) {
-                                        conflictMsg += `🎾 练习球数：\n`;
-                                        conflictMsg += `  当前：${existing.ballCount || 0} 个\n`;
-                                        conflictMsg += `  导入：${imported.ballCount || 0} 个\n\n`;
-                                    }
-
-                                    if (notesConflict) {
-                                        conflictMsg += `📝 心得体会：\n`;
-                                        conflictMsg += `  当前：${existing.notes || '（空）'}\n`;
-                                        conflictMsg += `  导入：${imported.notes || '（空）'}\n\n`;
-                                    }
-
-                                    conflictMsg += `请选择：\n`;
-                                    conflictMsg += `1 - 保留当前记录\n`;
-                                    conflictMsg += `2 - 替换为导入记录\n`;
-                                    conflictMsg += `3 - 合并（保留非空值）\n`;
-                                    conflictMsg += `4 - 跳过该记录\n\n`;
-                                    conflictMsg += `输入 1、2、3 或 4：`;
-
-                                    const choice = prompt(conflictMsg);
-
-                                    if (choice === '1') {
-                                        // 保留当前
-                                        continue;
-                                    } else if (choice === '2') {
-                                        // 替换为导入
-                                        mergedLogs[index] = imported;
-                                    } else if (choice === '3') {
-                                        // 合并
-                                        const mergedLog = {
-                                            ...existing,
-                                            duration: imported.duration || existing.duration,
-                                            ballCount: (imported.ballCount || 0) || (existing.ballCount || 0),
-                                            notes: existing.notes || imported.notes
-                                        };
-                                        // 如果两边都有文字，提示合并
-                                        if (existing.notes && imported.notes && existing.notes !== imported.notes) {
-                                            const mergeNotes = prompt(
-                                                `两边都有心得体会，请选择：\n\n` +
-                                                `【当前】\n${existing.notes}\n\n` +
-                                                `【导入】\n${imported.notes}\n\n` +
-                                                `1 - 保留当前\n` +
-                                                `2 - 使用导入\n` +
-                                                `3 - 两者都保留（用分隔符连接）\n\n` +
-                                                `输入 1、2 或 3：`
-                                            );
-                                            if (mergeNotes === '2') {
-                                                mergedLog.notes = imported.notes;
-                                            } else if (mergeNotes === '3') {
-                                                mergedLog.notes = existing.notes + '\n---\n' + imported.notes;
-                                            }
-                                        }
-                                        mergedLogs[index] = mergedLog;
-                                    } else if (choice === '4') {
-                                        // 跳过
-                                        continue;
-                                    } else {
-                                        // 取消或无效输入，保留当前
-                                        continue;
-                                    }
-                                }
-                            }
-
-                            if (autoSkipped > 0 || conflicts.length > 0) {
-                                const summary = `导入完成：\n\n` +
-                                    `✅ 新增记录：${mergedLogs.length - currentLogs.length} 条\n` +
-                                    `⏭️ 跳过重复：${autoSkipped} 条\n` +
-                                    `⚠️ 处理冲突：${conflicts.length} 条\n\n` +
-                                    `当前训练记录总数：${mergedLogs.length} 条`;
-                                alert(summary);
-                            }
-                        } else {
-                            // 仅新增
-                            mergedLogs = currentLogs.filter(curLog => 
-                                !importedLogs.some(impLog => impLog.date === curLog.date && impLog.type === curLog.type)
-                            );
-                            mergedLogs = [...mergedLogs, ...importedLogs.filter(impLog => 
-                                !currentLogs.some(curLog => curLog.date === impLog.date && curLog.type === impLog.type)
-                            )];
-                        }
-                    }
-
-                    // 其他数据直接使用导入的数据（除非是模式2/3，且已有数据）
-                    if (importMode === '1') {
-                        // 直接覆盖模式
-                        if (imported.data.skills) mergedSkills = imported.data.skills;
-                        if (imported.data.skillNotes) mergedSkillNotes = imported.data.skillNotes;
-                        if (imported.data.stages) mergedStages = imported.data.stages;
-                        if (imported.data.trainingTypes) mergedTypes = imported.data.trainingTypes;
-                        if (imported.data.problems) mergedProblems = imported.data.problems;
-                    } else {
-                        // 合并/仅新增模式
-                        mergedSkills = imported.data.skills || localStorage.getItem('tennisSkills');
-                        mergedSkillNotes = imported.data.skillNotes || localStorage.getItem('tennisSkillNotes');
-                        mergedStages = imported.data.stages || localStorage.getItem('tennisStages');
-                        mergedTypes = imported.data.trainingTypes || localStorage.getItem('tennisTrainingTypes');
-                        mergedProblems = imported.data.problems || localStorage.getItem('tennisProblems');
-                    }
-
-                    // 保存合并后的数据
-                    if (mergedSkills !== null) localStorage.setItem('tennisSkills', mergedSkills);
-                    if (mergedSkillNotes !== null) localStorage.setItem('tennisSkillNotes', mergedSkillNotes);
-                    if (mergedStages !== null) localStorage.setItem('tennisStages', mergedStages);
-                    if (mergedLogs.length > 0) localStorage.setItem('tennisTrainingLogs', JSON.stringify(mergedLogs));
-                    if (mergedTypes !== null) localStorage.setItem('tennisTrainingTypes', mergedTypes);
-                    if (mergedProblems !== null) localStorage.setItem('tennisProblems', mergedProblems);
-
-                    // 显示导入结果
-                    if (importMode === '2') {
-                        // 智能合并模式，显示冲突统计
-                        if (autoSkipped > 0 || conflicts.length > 0) {
-                            const summary = `导入完成：\n\n` +
-                                `✅ 新增记录：${mergedLogs.length - currentLogs.length} 条\n` +
-                                `⏭️ 跳过重复：${autoSkipped} 条\n` +
-                                `⚠️ 处理冲突：${conflicts.length} 条\n\n` +
-                                `当前训练记录总数：${mergedLogs.length} 条`;
-                            alert(summary);
-                        }
-                    } else {
-                        // 其他导入模式
-                        const addedCount = mergedLogs.length - (importMode === '1' ?
-                            (imported.data.trainingLogs ? JSON.parse(imported.data.trainingLogs).length : 0) :
-                            JSON.parse(localStorage.getItem('tennisTrainingLogs') || '[]').length);
-
-                        alert(`数据导入完成！\n\n导入模式：${importMode === '1' ? '直接覆盖' : '仅新增'}\n当前训练记录：${mergedLogs.length} 条\n\n页面将刷新以应用更改。`);
-                    }
-
-                    location.reload();
+                    // 显示导入模式选择弹窗
+                    showImportModeModal(imported);
 
                 } catch (error) {
                     alert('导入失败：文件解析错误\n' + error.message);
@@ -2726,6 +2717,180 @@
 
             // 清空input，允许重复选择同一文件
             event.target.value = '';
+        }
+
+        function processImportWithMode(imported, importMode) {
+            let mergedLogs = [];
+            let mergedSkills = null;
+            let mergedSkillNotes = null;
+            let mergedStages = null;
+            let mergedTypes = null;
+            let mergedProblems = null;
+            let autoSkipped = 0;
+            let handledConflicts = 0;
+            let cancelled = false;
+
+            // 训练日志合并
+            if (imported.data.trainingLogs) {
+                const currentLogs = JSON.parse(localStorage.getItem('tennisTrainingLogs') || '[]');
+                const importedLogs = JSON.parse(imported.data.trainingLogs || '[]');
+
+                if (importMode === '1') {
+                    // 直接覆盖
+                    mergedLogs = importedLogs;
+                } else if (importMode === '2') {
+                    // 智能合并：字段级合并
+                    mergedLogs = [...currentLogs];
+                    let conflicts = [];
+
+                    importedLogs.forEach(impLog => {
+                        const existingIndex = currentLogs.findIndex(curLog => 
+                            curLog.date === impLog.date && curLog.type === impLog.type
+                        );
+
+                        if (existingIndex !== -1) {
+                            const curLog = currentLogs[existingIndex];
+                            
+                            // 检查是否完全相同
+                            const isIdentical = 
+                                curLog.duration === impLog.duration &&
+                                curLog.ballCount === (impLog.ballCount || 0) &&
+                                curLog.notes === (impLog.notes || '');
+
+                            if (isIdentical) {
+                                // 完全相同，自动跳过
+                                autoSkipped++;
+                            } else {
+                                // 有差异，记录冲突
+                                conflicts.push({
+                                    existing: curLog,
+                                    imported: impLog,
+                                    index: existingIndex
+                                });
+                            }
+                        } else {
+                            // 新记录，直接添加
+                            mergedLogs.push(impLog);
+                        }
+                    });
+
+                    // 异步处理冲突
+                    if (conflicts.length > 0) {
+                        for (let i = 0; i < conflicts.length && !cancelled; i++) {
+                            const conflict = conflicts[i];
+                            
+                            const choice = await new Promise((resolve) => {
+                                showConflictModal(
+                                    conflict.existing, 
+                                    conflict.imported, 
+                                    i, 
+                                    conflicts.length,
+                                    resolve
+                                );
+                            });
+
+                            if (choice === 0) {
+                                // 取消导入
+                                cancelled = true;
+                                break;
+                            } else if (choice === 1) {
+                                // 保留当前
+                                continue;
+                            } else if (choice === 2) {
+                                // 替换为导入
+                                mergedLogs[conflict.index] = conflict.imported;
+                                handledConflicts++;
+                            } else if (choice === 3) {
+                                // 合并
+                                const mergedLog = {
+                                    ...conflict.existing,
+                                    duration: conflict.imported.duration || conflict.existing.duration,
+                                    ballCount: (conflict.imported.ballCount || 0) || (conflict.existing.ballCount || 0),
+                                    notes: conflict.existing.notes || conflict.imported.notes
+                                };
+                                // 如果两边都有文字，提示合并
+                                if (conflict.existing.notes && conflict.imported.notes && conflict.existing.notes !== conflict.imported.notes) {
+                                    const notesChoice = await new Promise((resolve) => {
+                                        showNotesMergeModal(
+                                            conflict.existing.notes,
+                                            conflict.imported.notes,
+                                            resolve
+                                        );
+                                    });
+                                    if (notesChoice === 2) {
+                                        mergedLog.notes = conflict.imported.notes;
+                                    } else if (notesChoice === 3) {
+                                        mergedLog.notes = conflict.existing.notes + '\n---\n' + conflict.imported.notes;
+                                    }
+                                }
+                                mergedLogs[conflict.index] = mergedLog;
+                                handledConflicts++;
+                            } else if (choice === 4) {
+                                // 跳过
+                                continue;
+                            }
+                        }
+                    }
+                } else {
+                    // 仅新增
+                    mergedLogs = currentLogs.filter(curLog => 
+                        !importedLogs.some(impLog => impLog.date === curLog.date && impLog.type === curLog.type)
+                    );
+                    mergedLogs = [...mergedLogs, ...importedLogs.filter(impLog => 
+                        !currentLogs.some(curLog => curLog.date === impLog.date && curLog.type === impLog.type)
+                    )];
+                }
+            }
+
+            if (cancelled) {
+                return;
+            }
+
+            // 其他数据直接使用导入的数据（除非是模式2/3，且已有数据）
+            if (importMode === '1') {
+                // 直接覆盖模式
+                if (imported.data.skills) mergedSkills = imported.data.skills;
+                if (imported.data.skillNotes) mergedSkillNotes = imported.data.skillNotes;
+                if (imported.data.stages) mergedStages = imported.data.stages;
+                if (imported.data.trainingTypes) mergedTypes = imported.data.trainingTypes;
+                if (imported.data.problems) mergedProblems = imported.data.problems;
+            } else {
+                // 合并/仅新增模式
+                mergedSkills = imported.data.skills || localStorage.getItem('tennisSkills');
+                mergedSkillNotes = imported.data.skillNotes || localStorage.getItem('tennisSkillNotes');
+                mergedStages = imported.data.stages || localStorage.getItem('tennisStages');
+                mergedTypes = imported.data.trainingTypes || localStorage.getItem('tennisTrainingTypes');
+                mergedProblems = imported.data.problems || localStorage.getItem('tennisProblems');
+            }
+
+            // 保存合并后的数据
+            if (mergedSkills !== null) localStorage.setItem('tennisSkills', mergedSkills);
+            if (mergedSkillNotes !== null) localStorage.setItem('tennisSkillNotes', mergedSkillNotes);
+            if (mergedStages !== null) localStorage.setItem('tennisStages', mergedStages);
+            if (mergedLogs.length > 0) localStorage.setItem('tennisTrainingLogs', JSON.stringify(mergedLogs));
+            if (mergedTypes !== null) localStorage.setItem('tennisTrainingTypes', mergedTypes);
+            if (mergedProblems !== null) localStorage.setItem('tennisProblems', mergedProblems);
+
+            // 显示导入结果
+            const modeNames = { '1': '直接覆盖', '2': '智能合并', '3': '仅新增' };
+            const newRecords = mergedLogs.length - (importMode === '1' ? 
+                (imported.data.trainingLogs ? JSON.parse(imported.data.trainingLogs).length : 0) : 
+                JSON.parse(localStorage.getItem('tennisTrainingLogs') || '[]').length);
+
+            let resultContent = `<div style="margin-bottom: 10px;"><strong>导入模式：</strong>${modeNames[importMode] || importMode}</div>`;
+            resultContent += `<div style="margin-bottom: 10px;"><strong>当前训练记录：</strong>${mergedLogs.length} 条</div>`;
+            
+            if (importMode === '2') {
+                resultContent += `<div style="margin-bottom: 10px; color: #28a745;">✅ 新增记录：${Math.max(0, newRecords)} 条</div>`;
+                resultContent += `<div style="margin-bottom: 10px; color: #999;">⏭️ 跳过重复：${autoSkipped} 条</div>`;
+                if (handledConflicts > 0) {
+                    resultContent += `<div style="color: #f57c00;">⚠️ 处理冲突：${handledConflicts} 条</div>`;
+                }
+            }
+
+            showImportResultModal(true, '导入完成！', resultContent, () => {
+                setTimeout(() => location.reload(), 300);
+            });
         }
 
         // 清空所有数据
