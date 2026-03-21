@@ -2256,9 +2256,9 @@
                     let mergedProblems = null;
 
                     // 训练日志合并
-                    if (data.trainingLogs) {
+                    if (imported.data.trainingLogs) {
                         const currentLogs = JSON.parse(localStorage.getItem('tennisTrainingLogs') || '[]');
-                        const importedLogs = JSON.parse(data.trainingLogs || '[]');
+                        const importedLogs = JSON.parse(imported.data.trainingLogs || '[]');
 
                         if (importMode === '1') {
                             // 直接覆盖
