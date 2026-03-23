@@ -1010,6 +1010,25 @@
                 </div>
             </div>
 
+            <!-- 密码重置弹窗 -->
+            <div id="resetPasswordModal" class="modal-overlay">
+                <div class="modal">
+                    <div class="modal-title">🔑 重置密码</div>
+                    <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">
+                        输入您的注册邮箱,我们会发送密码重置链接到您的邮箱。
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">邮箱地址</label>
+                        <input type="email" id="resetEmail" placeholder="输入注册邮箱" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em;">
+                    </div>
+                    <div id="resetPasswordStatus" class="auth-status" style="margin-top: 10px;"></div>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-cancel" onclick="closeResetPassword()">取消</button>
+                        <button class="modal-btn modal-btn-save" onclick="handleResetPassword()">发送重置邮件</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 问题诊断 -->
             <div id="problems" class="tab-content">
                 <div class="section">
@@ -1105,6 +1124,9 @@
                                 </div>
                                 <button type="submit" class="btn">🔐 登录</button>
                             </form>
+                            <div style="text-align: center; margin-top: -10px; margin-bottom: 20px;">
+                                <button onclick="showResetPassword()" style="background: none; border: none; color: #667eea; cursor: pointer; font-size: 0.9em; text-decoration: underline;">忘记密码?</button>
+                            </div>
                         </div>
 
                         <div class="progress-section">
@@ -1302,6 +1324,16 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             auth = firebase.auth();
+
+            // 设置登录状态持久化为 LOCAL(本地存储)
+            // 这样用户关闭浏览器后,登录状态仍然会保持
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .then(() => {
+                    console.log('登录状态持久化已启用');
+                })
+                .catch((error) => {
+                    console.error('设置持久化失败:', error);
+                });
 
             // 启用离线持久化
             db.enablePersistence()
@@ -1624,6 +1656,53 @@
                 if (result.success) {
                     alert('已登出');
                 }
+            }
+        }
+
+        // 显示密码重置模态框
+        function showResetPassword() {
+            document.getElementById('resetPasswordModal').classList.add('active');
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetPasswordStatus').textContent = '';
+            document.getElementById('resetPasswordStatus').className = 'auth-status';
+        }
+
+        // 关闭密码重置模态框
+        function closeResetPassword() {
+            document.getElementById('resetPasswordModal').classList.remove('active');
+        }
+
+        // 处理密码重置
+        async function handleResetPassword() {
+            const email = document.getElementById('resetEmail').value;
+            const statusDiv = document.getElementById('resetPasswordStatus');
+
+            if (!email) {
+                statusDiv.textContent = '请输入邮箱地址';
+                statusDiv.className = 'auth-status error';
+                return;
+            }
+
+            statusDiv.textContent = '发送中...';
+            statusDiv.className = 'auth-status info';
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                statusDiv.textContent = '✅ 重置邮件已发送,请查收邮箱';
+                statusDiv.className = 'auth-status success';
+                setTimeout(() => {
+                    closeResetPassword();
+                }, 2000);
+            } catch (error) {
+                console.error('密码重置失败:', error);
+                let errorMessage = '发送失败';
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = '该邮箱未注册';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = '邮箱格式错误';
+                }
+                statusDiv.textContent = errorMessage;
+                statusDiv.className = 'auth-status error';
             }
         }
 
