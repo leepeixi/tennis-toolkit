@@ -984,6 +984,32 @@
                 </div>
             </div>
 
+            <!-- 恢复云端数据弹窗 -->
+            <div id="restoreModal" class="modal-overlay">
+                <div class="modal">
+                    <div class="modal-title">☁️ 发现云端数据</div>
+                    <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">
+                        检测到您的云端有训练数据,请选择操作:
+                    </p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="color: #495057; font-size: 0.95em; margin-bottom: 10px;">
+                            <strong>🔵 恢复云端数据</strong>
+                        </p>
+                        <p style="color: #6c757d; font-size: 0.9em;">云端数据将覆盖本地数据,适合在新设备上使用</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="color: #495057; font-size: 0.95em; margin-bottom: 10px;">
+                            <strong>🟢 保留本地数据</strong>
+                        </p>
+                        <p style="color: #6c757d; font-size: 0.9em;">保留当前设备的本地数据,并在后台自动同步到云端</p>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-cancel" onclick="handleRestoreChoice(false)">保留本地数据</button>
+                        <button class="modal-btn modal-btn-save" onclick="handleRestoreChoice(true)">恢复云端数据</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 问题诊断 -->
             <div id="problems" class="tab-content">
                 <div class="section">
@@ -1270,6 +1296,7 @@
         let auth = null;
         let currentUser = null;
         let cloudListener = null;
+        let pendingCloudData = null;
 
         function initFirebase() {
             firebase.initializeApp(firebaseConfig);
@@ -1411,22 +1438,11 @@
                     if (cloudData.problems) localStorage.setItem('tennisProblems', cloudData.problems);
                     console.log('云端数据已静默加载');
                     showSyncStatus('已同步', 'success');
+                    refreshAllViews();
                 } else {
-                    // 首次恢复，询问用户
-                    const confirmed = confirm(
-                        '发现云端数据，是否恢复？\n\n' +
-                        '点击"确定"：云端数据覆盖本地\n' +
-                        '点击"取消"：保留本地数据'
-                    );
-
-                    if (confirmed) {
-                        restoreCloudData(cloudData);
-                        localStorage.setItem('hasRestoredCloudData', 'true');
-                        showSyncStatus('已恢复云端数据', 'success');
-                    } else {
-                        localStorage.setItem('hasRestoredCloudData', 'true');
-                        showSyncStatus('已保留本地数据', 'info');
-                    }
+                    // 首次恢复，显示模态框
+                    pendingCloudData = cloudData;
+                    document.getElementById('restoreModal').classList.add('active');
                 }
 
                 return true;
@@ -1438,8 +1454,11 @@
         }
 
         // 启用云端实时同步
-        function enableCloudSync() {
+        async function enableCloudSync() {
             if (!currentUser) return;
+
+            // 先从云端加载数据
+            await loadDataFromCloud();
 
             // 监听云端数据变化
             cloudListener = db.collection('users').doc(currentUser.uid)
@@ -1472,6 +1491,24 @@
             displayTrainingLogs();
             displayProblems();
             updateProgress();
+        }
+
+        // 处理恢复数据选择
+        function handleRestoreChoice(restore) {
+            document.getElementById('restoreModal').classList.remove('active');
+
+            if (restore) {
+                restoreCloudData(pendingCloudData);
+                localStorage.setItem('hasRestoredCloudData', 'true');
+                showSyncStatus('已恢复云端数据', 'success');
+            } else {
+                localStorage.setItem('hasRestoredCloudData', 'true');
+                showSyncStatus('已保留本地数据', 'info');
+                // 将本地数据上传到云端
+                saveDataToCloud();
+            }
+
+            pendingCloudData = null;
         }
 
         function restoreCloudData(data) {
